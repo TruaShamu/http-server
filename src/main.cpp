@@ -3,12 +3,25 @@
 #include <winsock2.h>
 #include <stdexcept>
 #include <cstdio>
+#include <sstream>
 
 using namespace std;
 
 void die(const char* what) {
     printf("%s failed. Winsock error: %d\n", what, WSAGetLastError());
-    WSACleanup();
+}
+
+struct Request {
+    string method;
+    string path;
+    string version;
+};
+
+Request parseRequestLine(const string& raw) { 
+    istringstream iss(raw); 
+    Request req;
+    iss >> req.method >> req.path >> req.version; 
+    return req;
 }
 
 int main() {
@@ -63,8 +76,10 @@ int main() {
         char buffer[4096];
         while (true) {
             int bytes = recv(clientSocket, buffer, sizeof(buffer), 0);
-        
-            if (bytes > 0)      {
+            if (bytes > 0) {
+                string request(buffer, bytes);
+                Request httpRequest = parseRequestLine(request);
+                printf("%s %s %s\n", httpRequest.method.c_str(), httpRequest.path.c_str(), httpRequest.version.c_str());
                 int total = 0;
                 while (total < bytes) {
                     // 8. send()      -> echo the bytes back
