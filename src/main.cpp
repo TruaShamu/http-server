@@ -24,6 +24,12 @@ Request parseRequestLine(const string& raw) {
     return req;
 }
 
+string buildResponse(int statusCode, const string& reason, const string& contentType, const string& body) {
+    ostringstream oss;
+    oss << "HTTP/1.1 " <<  to_string(statusCode) << " " << reason << "\r\n" <<  "Content-Type: " << contentType << "\r\n" << "Content-Length:" << to_string(body.size()) << "\r\n\r\n" << body;
+    return oss.str();
+}
+
 int main() {
     // 1. WSAStartup  -> load Winsock, check return
     WSAData wsaData;
@@ -80,10 +86,13 @@ int main() {
                 string request(buffer, bytes);
                 Request httpRequest = parseRequestLine(request);
                 printf("%s %s %s\n", httpRequest.method.c_str(), httpRequest.path.c_str(), httpRequest.version.c_str());
+                string response = buildResponse(200, "OK", "text/html",
+                    "<html><body><h1>Hello from my C++ server!</h1></body></html>");
                 int total = 0;
-                while (total < bytes) {
-                    // 8. send()      -> echo the bytes back
-                    int sent = send(clientSocket, buffer + total, bytes - total, 0);
+                int len = (int) response.size();
+                while (total < len) {
+                    // 8. send() -> echo the bytes back
+                    int sent = send(clientSocket, response.c_str() + total, response.size() - total, 0);
                     if (sent == SOCKET_ERROR) {
                         die("send");
                         break;
