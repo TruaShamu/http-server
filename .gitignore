@@ -1,0 +1,23 @@
+# Build artifacts
+*.exe
+*.o
+*.obj
+*.out
+*.a
+*.lib
+*.dll
+*.pdb
+*.ilk
+
+# Build directories
+build/
+out/
+bin/
+
+# Editor / IDE
+.vs/
+*.user
+
+# OS files
+Thumbs.db
+.DS_Store
