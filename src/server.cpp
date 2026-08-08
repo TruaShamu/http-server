@@ -14,8 +14,7 @@ void handleClient(Socket clientSocket) {
             string request(buffer, bytes);
             Request httpRequest = parseRequestLine(request);
             printf("%s %s %s\n", httpRequest.method.c_str(), httpRequest.path.c_str(), httpRequest.version.c_str());
-            string response = buildResponse(200, "OK", "text/html",
-                "<html><body><h1>Hello from my C++ server!</h1></body></html>");
+            string response = routeRequest(httpRequest).serialize();
             int total = 0;
             int len = (int) response.size();
             while (total < len) {

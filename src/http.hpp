@@ -7,6 +7,16 @@ struct Request {
     std::string version;
 };
 
+struct Response {
+    int statusCode = 200;
+    std::string reason = "OK";
+    std::string contentType = "text/plain";
+    std::string body;
+    std::string serialize() const;
+};
+
 Request parseRequestLine(const std::string& raw);
 
-std::string buildResponse(int statusCode, const std::string& reason, const std::string& contentType, const std::string& body);
+Response routeRequest(const Request& req);
+
+Response serveStaticFile(const std::string& urlPath);
