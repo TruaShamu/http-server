@@ -11,13 +11,16 @@
         "-Wextra",
         "-g",
         "${workspaceFolder}/src/main.cpp",
+        "${workspaceFolder}/src/net.cpp",
+        "${workspaceFolder}/src/http.cpp",
+        "${workspaceFolder}/src/server.cpp",
         "-o",
         "${workspaceFolder}/server.exe",
         "-lws2_32"
       ],
       "group": { "kind": "build", "isDefault": true },
       "problemMatcher": ["$gcc"],
-      "detail": "Compile src/main.cpp and link Winsock (ws2_32)."
+      "detail": "Compile all src/*.cpp translation units and link Winsock (ws2_32)."
     }
   ]
 }
