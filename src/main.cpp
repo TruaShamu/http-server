@@ -5,8 +5,10 @@
 #include <cstdio>
 #include <sstream>
 #include <thread>
+#include <memory>
 #include "net.hpp"
 #include "server.hpp"
+#include "threadpool.hpp"
 
 using namespace std;
 
@@ -43,6 +45,7 @@ int main() {
     printf("Listening on http://localhost:8080 ...\n");
 
     // 6. accept()    -> BLOCKS; returns the client socket; check INVALID_SOCKET
+    ThreadPool pool(4);
     while (true) {
         sockaddr_in clientAddr{};
         int addrLen = sizeof(clientAddr);
@@ -52,8 +55,10 @@ int main() {
             continue;
         }
         Socket clientSocket(rawClientSocket);
-        std::thread t(handleClient, std::move(clientSocket));
-        t.detach();
+        auto sock = std::make_shared<Socket>(std::move(clientSocket));
+        pool.enqueue([sock]() {
+            handleClient(std::move(*sock));
+        });
     }
     return 0;
 
