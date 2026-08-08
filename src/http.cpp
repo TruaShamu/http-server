@@ -2,9 +2,13 @@
 #include <sstream>
 #include <fstream>
 #include <filesystem>
+#include <unordered_map>
+#include <cctype>
+#include <algorithm>
 
 using namespace std;
 namespace fs = std::filesystem;
+std::string mimeType(const fs::path& p);
 
 Request parseRequestLine(const string& raw) { 
     istringstream iss(raw); 
@@ -31,9 +35,9 @@ Response serveStaticFile(const std::string& urlPath) {
     if (rel == "/") rel = "/index.html";
     fs::path docroot = fs::weakly_canonical("public");     // the sandbox, absolute
     fs::path candidate = fs::weakly_canonical(docroot / rel.substr(1));
-    auto rootStr = docroot.string();
-    auto candStr = candidate.string();
-    if (candStr.rfind(rootStr, 0) != 0) {          // rfind(x,0)==0 means "starts with x"
+    std::error_code ec;
+    fs::path relPath = fs::relative(candidate, docroot, ec);
+    if (ec || relPath.empty() || relPath.begin()->string() == "..") {
         return Response{403, "Forbidden", "text/plain", "403 Forbidden"};
     }
     if (!fs::exists(candidate) || !fs::is_regular_file(candidate)) {
@@ -43,6 +47,20 @@ Response serveStaticFile(const std::string& urlPath) {
     std::ostringstream ss;
     ss << file.rdbuf();               // slurp entire file
     std::string body = ss.str();
-    return Response{200, "OK", "text/html", body};
+    return Response{200, "OK", mimeType(candidate), body};
+}
 
+std::string mimeType(const fs::path& p) {
+    std::string ext = p.extension().string();
+    std::transform(ext.begin(), ext.end(), ext.begin(),
+                   [](unsigned char c){ return std::tolower(c); });
+    static const std::unordered_map<std::string, std::string> types = {
+        {".html", "text/html"}, {".htm", "text/html"},
+        {".css",  "text/css"},  {".js",  "application/javascript"},
+        {".png",  "image/png"}, {".jpg", "image/jpeg"}, {".jpeg", "image/jpeg"},
+        {".gif",  "image/gif"}, {".svg", "image/svg+xml"}, {".txt", "text/plain"},
+    };
+
+    auto it = types.find(ext);
+    return it != types.end() ? it->second : "application/octet-stream";
 }

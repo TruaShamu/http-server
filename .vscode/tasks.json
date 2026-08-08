@@ -15,7 +15,6 @@
         "${workspaceFolder}/src/http.cpp",
         "${workspaceFolder}/src/server.cpp",
         "${workspaceFolder}/src/threadpool.cpp",
-        "${workspaceFolder}/src/threadpool.cpp",
         "-o",
         "${workspaceFolder}/server.exe",
         "-lws2_32"
