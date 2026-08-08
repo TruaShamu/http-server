@@ -1,5 +1,8 @@
 #pragma once
 #include <string>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 struct Request {
     std::string method;
@@ -19,4 +22,4 @@ Request parseRequestLine(const std::string& raw);
 
 Response routeRequest(const Request& req);
 
-Response serveStaticFile(const std::string& urlPath);
+Response serveStaticFile(const std::string& urlPath, const fs::path& docroot = "public");

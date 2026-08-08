@@ -30,13 +30,13 @@ Response routeRequest(const Request& req) {
     return serveStaticFile(req.path);
 }
 
-Response serveStaticFile(const std::string& urlPath) {
+Response serveStaticFile(const std::string& urlPath, const fs::path& docroot) {
     std::string rel = urlPath;
     if (rel == "/") rel = "/index.html";
-    fs::path docroot = fs::weakly_canonical("public");     // the sandbox, absolute
-    fs::path candidate = fs::weakly_canonical(docroot / rel.substr(1));
+    fs::path root = fs::weakly_canonical(docroot); 
+    fs::path candidate = fs::weakly_canonical(root / rel.substr(1));
     std::error_code ec;
-    fs::path relPath = fs::relative(candidate, docroot, ec);
+    fs::path relPath   = fs::relative(candidate, root, ec);
     if (ec || relPath.empty() || relPath.begin()->string() == "..") {
         return Response{403, "Forbidden", "text/plain", "403 Forbidden"};
     }
